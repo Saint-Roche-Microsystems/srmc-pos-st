@@ -55,6 +55,20 @@ export class PosService {
         this._cart.set([]);
     }
 
+    addProduct(product: Omit<Product, 'id'>) {
+        const newProduct: Product = {
+            ...product,
+            id: (this._products().length + 1).toString()
+        };
+        this._products.update(items => [...items, newProduct]);
+    }
+
+    deleteProduct(productId: string) {
+        this._products.update(items => items.filter(p => p.id !== productId));
+        // Also remove from cart if it exists
+        this.removeFromCart(productId);
+    }
+
     checkout() {
         // Process payment logic would go here
         console.log('Processing checkout for total:', this.cartTotal());
