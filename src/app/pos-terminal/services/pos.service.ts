@@ -1,23 +1,28 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { Product, CartItem } from '../../shared/models/product';
+import { ApiService } from '../../core/services/api.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class PosService {
-    private _products = signal<Product[]>([
-        { id: '1', name: 'Premium Coffee', price: 4.50, stock: 50, image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200&h=200&fit=crop' },
-        { id: '2', name: 'Avocado Toast', price: 12.00, stock: 20, image: 'https://www.allrecipes.com/thmb/8NccFzsaq0_OZPDKmf7Yee-aG78=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/AvocadoToastwithEggFranceC4x3-bb87e3bbf1944657b7db35f1383fabdb.jpg' },
-        { id: '3', name: 'Green Smoothie', price: 7.50, stock: 30, image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQHqWWge9x5HL-88Ax3mJ1IhgN3meBvNIOh4Q&s' },
-        { id: '4', name: 'Blueberry Muffin', price: 3.75, stock: 15, image: 'https://static01.nyt.com/images/2023/04/27/dining/03COOKING-JORDANMARSHMUFFIN2/03COOKING-JORDANMARSHMUFFIN2-threeByTwoMediumAt2X-v2.jpg' },
-        { id: '5', name: 'Croissant', price: 3.25, stock: 25, image: 'https://upload.wikimedia.org/wikipedia/commons/2/2a/Croissant-Petr_Kratochvil.jpg' },
-        { id: '6', name: 'Artisan Sourdough', price: 8.00, stock: 10, image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQE9r-lTbqJKsW1nwiQTdVftDfHtIbyqbzyPQ&s' },
-    ]);
-
+    private apiService = inject(ApiService);
+    private _products = signal<Product[]>([]);
     private _cart = signal<CartItem[]>([]);
 
     products = computed(() => this._products());
     cart = computed(() => this._cart());
+
+    constructor() {
+        this.loadProducts();
+    }
+
+    private loadProducts() {
+        this.apiService.get<Product[]>('products').subscribe({
+            next: (products) => this._products.set(products),
+            error: (err) => console.error('Failed to load products', err)
+        });
+    }
 
     cartTotal = computed(() =>
         this._cart().reduce((acc, item) => acc + (item.price * item.quantity), 0)
@@ -56,23 +61,42 @@ export class PosService {
     }
 
     addProduct(product: Omit<Product, 'id'>) {
-        const newProduct: Product = {
-            ...product,
-            id: (this._products().length + 1).toString()
-        };
-        this._products.update(items => [...items, newProduct]);
+        this.apiService.post<Product>('products', product).subscribe({
+            next: (newProduct) => {
+                this._products.update(items => [...items, newProduct]);
+            },
+            error: (err) => console.error('Failed to add product', err)
+        });
     }
 
     deleteProduct(productId: string) {
-        this._products.update(items => items.filter(p => p.id !== productId));
-        // Also remove from cart if it exists
-        this.removeFromCart(productId);
+        this.apiService.delete(`products/${productId}`).subscribe({
+            next: () => {
+                this._products.update(items => items.filter(p => p.id !== productId));
+                this.removeFromCart(productId);
+            },
+            error: (err) => console.error('Failed to delete product', err)
+        });
     }
 
     checkout() {
-        // Process payment logic would go here
-        console.log('Processing checkout for total:', this.cartTotal());
-        this.clearCart();
-        // In a real app, we would update stock levels here
+        const order = {
+            orderItems: this._cart().map(item => ({
+                productId: item.id,
+                quantity: item.quantity,
+                price: item.price
+            })),
+            total: this.cartTotal()
+        };
+
+        this.apiService.post('orders', order).subscribe({
+            next: () => {
+                console.log('Order processed successfully');
+                this.clearCart();
+                this.loadProducts(); // Fresh stock levels
+            },
+            error: (err) => console.error('Checkout failed', err)
+        });
     }
 }
+
