@@ -8,17 +8,16 @@
                     <p class="text-slate-500">Select items to add to the current order.</p>
                 </div>
                 <div class="flex gap-2">
-                    <p-button label="Filters" icon="pi pi-filter" [text]="true" severity="secondary" />
                     <p-button icon="pi pi-search" [text]="true" severity="secondary" />
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
                 @for (product of posService.products(); track product.id) {
                 <div (click)="posService.addToCart(product)"
-                    class="group relative bg-white rounded-3xl p-4 cursor-pointer border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.1)] hover:border-blue-200 transition-all active:scale-[0.98]">
+                    class="group relative bg-white rounded-3xl p-3 cursor-pointer border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.1)] hover:border-blue-200 transition-all active:scale-[0.98]">
 
-                    <div class="relative aspect-square rounded-2xl bg-slate-100 mb-4 overflow-hidden">
+                    <div class="relative aspect-video rounded-2xl bg-slate-100 mb-3 overflow-hidden">
                         @if (product.image) {
                         <img [src]="product.image"
                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
@@ -27,9 +26,7 @@
                             <i class="pi pi-image text-5xl"></i>
                         </div>
                         }
-                        <div class="absolute top-3 right-3">
-                            <p-tag [value]="product.category" [rounded]="true" severity="secondary" class="shadow-sm" />
-                        </div>
+
 
                         <div
                             class="absolute inset-0 bg-blue-600/0 group-hover:bg-blue-600/10 transition-colors pointer-events-none">
@@ -41,8 +38,7 @@
                             }}</h3>
                         <div class="flex items-center justify-between pt-1">
                             <span class="text-xl font-black text-slate-900">{{ product.price | currency }}</span>
-                            <span class="text-xs font-semibold px-2 py-1 rounded-full bg-slate-100 text-slate-500">{{
-                                product.stock }} pcs</span>
+
                         </div>
                     </div>
 
