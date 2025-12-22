@@ -1,0 +1,158 @@
+<div class="flex-1 flex overflow-hidden">
+    <!-- Product Grid -->
+    <div class="flex-1 overflow-y-auto p-4 md:p-8 bg-slate-50/50">
+        <div class="max-w-7xl mx-auto">
+            <div class="mb-8 flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-black text-slate-900 tracking-tight">Terminal</h1>
+                    <p class="text-slate-500">Select items to add to the current order.</p>
+                </div>
+                <div class="flex gap-2">
+                    <p-button label="Filters" icon="pi pi-filter" [text]="true" severity="secondary" />
+                    <p-button icon="pi pi-search" [text]="true" severity="secondary" />
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                @for (product of posService.products(); track product.id) {
+                <div (click)="posService.addToCart(product)"
+                    class="group relative bg-white rounded-3xl p-4 cursor-pointer border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.1)] hover:border-blue-200 transition-all active:scale-[0.98]">
+
+                    <div class="relative aspect-square rounded-2xl bg-slate-100 mb-4 overflow-hidden">
+                        @if (product.image) {
+                        <img [src]="product.image"
+                            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        } @else {
+                        <div class="w-full h-full flex items-center justify-center text-slate-300">
+                            <i class="pi pi-image text-5xl"></i>
+                        </div>
+                        }
+                        <div class="absolute top-3 right-3">
+                            <p-tag [value]="product.category" [rounded]="true" severity="secondary" class="shadow-sm" />
+                        </div>
+
+                        <div
+                            class="absolute inset-0 bg-blue-600/0 group-hover:bg-blue-600/10 transition-colors pointer-events-none">
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <h3 class="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{{ product.name
+                            }}</h3>
+                        <div class="flex items-center justify-between pt-1">
+                            <span class="text-xl font-black text-slate-900">{{ product.price | currency }}</span>
+                            <span class="text-xs font-semibold px-2 py-1 rounded-full bg-slate-100 text-slate-500">{{
+                                product.stock }} pcs</span>
+                        </div>
+                    </div>
+
+                    <!-- Hover action hint -->
+                    <div
+                        class="absolute -top-1 -right-1 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all shadow-lg scale-0 group-hover:scale-100">
+                        <i class="pi pi-plus text-xs"></i>
+                    </div>
+                </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Sidebar -->
+    <div class="w-[400px] bg-white border-l border-slate-200 flex flex-col shadow-2xl relative z-10">
+        <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
+                    <i class="pi pi-receipt text-xl"></i>
+                </div>
+                <h2 class="text-xl font-black text-slate-900 tracking-tight">Active Order</h2>
+            </div>
+            <span class="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-lg">{{ posService.cartCount() }}
+                items</span>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+            @if (posService.cart().length === 0) {
+            <div class="h-full flex flex-col items-center justify-center text-slate-400 text-center space-y-4 py-20">
+                <div class="w-24 h-24 rounded-full bg-slate-50 flex items-center justify-center">
+                    <i class="pi pi-shopping-bag text-5xl opacity-30"></i>
+                </div>
+                <div>
+                    <p class="font-bold text-slate-900">Your bag is empty</p>
+                    <p class="text-sm">Tap on products to add them here.</p>
+                </div>
+            </div>
+            } @else {
+            <div class="space-y-3">
+                @for (item of posService.cart(); track item.id) {
+                <div
+                    class="flex items-center gap-4 p-4 rounded-3xl border border-transparent hover:border-slate-100 hover:bg-slate-50/50 group transition-all">
+                    <div class="relative w-16 h-16 rounded-2xl bg-slate-100 flex-shrink-0 overflow-hidden shadow-sm">
+                        @if (item.image) {
+                        <img [src]="item.image" class="w-full h-full object-cover">
+                        } @else {
+                        <div class="w-full h-full flex items-center justify-center text-slate-300">
+                            <i class="pi pi-image"></i>
+                        </div>
+                        }
+                        <div class="absolute -top-1 -right-1 bg-red-500 text-white w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                            (click)="posService.removeFromCart(item.id)">
+                            <i class="pi pi-times"></i>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 min-w-0">
+                        <p class="font-bold text-slate-900 truncate">{{ item.name }}</p>
+                        <div class="flex items-center gap-3 pt-1">
+                            <span class="text-blue-600 font-bold text-sm">{{ item.price | currency }}</span>
+                            <div
+                                class="flex items-center gap-2 bg-white rounded-lg border border-slate-200 px-1 py-0.5">
+                                <button (click)="posService.updateQuantity(item.id, item.quantity - 1)"
+                                    class="w-5 h-5 flex items-center justify-center text-slate-400 hover:text-red-500 transition-colors">
+                                    <i class="pi pi-minus text-[8px]"></i>
+                                </button>
+                                <span class="text-xs font-bold text-slate-900 min-w-[20px] text-center">{{ item.quantity
+                                    }}</span>
+                                <button (click)="posService.updateQuantity(item.id, item.quantity + 1)"
+                                    class="w-5 h-5 flex items-center justify-center text-slate-400 hover:text-blue-500 transition-colors">
+                                    <i class="pi pi-plus text-[8px]"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-right">
+                        <span class="font-black text-slate-900">{{ (item.price * item.quantity) | currency }}</span>
+                    </div>
+                </div>
+                }
+            </div>
+            }
+        </div>
+
+        <div class="p-6 bg-slate-50 border-t border-slate-200 space-y-4">
+            <div class="space-y-2">
+                <div class="flex justify-between text-slate-500 text-sm font-medium">
+                    <span>Subtotal</span>
+                    <span>{{ posService.cartTotal() | currency }}</span>
+                </div>
+                <div class="flex justify-between text-slate-500 text-sm font-medium">
+                    <span>Tax (0.00%)</span>
+                    <span>$0.00</span>
+                </div>
+                <div
+                    class="flex justify-between text-3xl font-black text-slate-900 pt-3 mt-2 border-t border-slate-200">
+                    <span>Total</span>
+                    <span class="text-blue-600">{{ posService.cartTotal() | currency }}</span>
+                </div>
+            </div>
+
+            <div class="pt-4 flex gap-3">
+                <p-button icon="pi pi-trash" [text]="true" severity="danger" (click)="posService.clearCart()"
+                    [disabled]="posService.cart().length === 0" styleClass="p-4 rounded-2xl" />
+                <p-button label="Checkout Now" icon="pi pi-arrow-right" iconPos="right" severity="primary"
+                    (click)="posService.checkout()" [disabled]="posService.cart().length === 0"
+                    styleClass="w-full py-4 rounded-2xl font-bold shadow-lg shadow-blue-500/20" />
+            </div>
+        </div>
+    </div>
+</div>
