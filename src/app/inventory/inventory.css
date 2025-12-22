@@ -1,0 +1,7 @@
+:host {
+    display: contents;
+}
+
+::ng-deep .p-datatable .p-datatable-tbody>tr>td {
+    border-bottom: 1px solid #f8fafc;
+}
