@@ -1,0 +1,68 @@
+<div class="h-screen w-screen flex items-center justify-center bg-gray-50">
+  <div class="w-full max-w-md px-4">
+
+    <!-- Card -->
+    <div class="bg-white rounded-2xl shadow-xl px-8 py-10">
+
+      <!-- Logo + Title -->
+      <div class="flex flex-col items-center">
+        <img class="h-24 w-24 rounded-2xl shadow-md"
+          src="https://avatars.githubusercontent.com/u/243858934?s=400&u=fec71ed6af5e31650e0c13e55651057a8cecfb1c&v=4"
+          alt="Logo" />
+
+        <h2 class="mt-6 text-3xl font-extrabold text-gray-900 text-center">
+          Sign in to your account
+        </h2>
+
+        <p class="mt-2 text-sm text-gray-500 text-center">
+          Enter your credentials to continue
+        </p>
+      </div>
+
+      <!-- Form -->
+      <form class="mt-8 space-y-6" (ngSubmit)="login()">
+
+        <!-- Inputs -->
+        <div class="space-y-4">
+          <div>
+            <label for="username" class="sr-only">Username</label>
+            <input id="username" name="username" type="text" required placeholder="Username"
+              [(ngModel)]="credentials.username" class="block w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 placeholder-gray-400
+                     focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none sm:text-sm" />
+          </div>
+
+          <div>
+            <label for="password" class="sr-only">Password</label>
+            <input id="password" name="password" type="password" required placeholder="Password"
+              [(ngModel)]="credentials.password" class="block w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 placeholder-gray-400
+                     focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none sm:text-sm" />
+          </div>
+        </div>
+
+        <!-- Error -->
+        <div *ngIf="errorMessage" class="text-red-500 text-sm text-center">
+          {{ errorMessage }}
+        </div>
+
+        <!-- Button -->
+        <button type="submit" [disabled]="isLoading" class="w-full flex justify-center items-center rounded-md bg-blue-600 py-2.5 px-4 text-sm font-medium text-white
+                 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+          <span *ngIf="!isLoading">Sign in</span>
+          <span *ngIf="isLoading">Signing in...</span>
+        </button>
+
+        <div class="text-center mt-4">
+          <p class="text-sm text-gray-600">
+            Don't have an account?
+            <a routerLink="/register" class="font-medium text-blue-600 hover:text-blue-500">
+              Sign up here
+            </a>
+          </p>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+</div>

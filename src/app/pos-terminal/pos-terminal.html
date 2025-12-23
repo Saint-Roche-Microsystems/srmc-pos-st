@@ -14,7 +14,9 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
                 @for (product of posService.products(); track product.id) {
-                <div (click)="posService.addToCart(product)"
+                <div (click)="posService.canAddToCart(product.id) ? posService.addToCart(product) : null"
+                    [class.opacity-50]="!posService.canAddToCart(product.id)"
+                    [class.cursor-not-allowed]="!posService.canAddToCart(product.id)"
                     class="group relative bg-white rounded-3xl p-3 cursor-pointer border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.1)] hover:border-blue-200 transition-all active:scale-[0.98]">
 
                     <div class="relative aspect-video rounded-2xl bg-slate-100 mb-3 overflow-hidden">
@@ -27,6 +29,12 @@
                         </div>
                         }
 
+                        <!-- Stock Badge -->
+                        <div class="absolute top-2 left-2">
+                            <p-tag [severity]="getStockSeverity(product.stock)"
+                                   [value]="getStockText(product.stock)"
+                                   styleClass="font-bold" />
+                        </div>
 
                         <div
                             class="absolute inset-0 bg-blue-600/0 group-hover:bg-blue-600/10 transition-colors pointer-events-none">
@@ -36,17 +44,22 @@
                     <div class="space-y-1">
                         <h3 class="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{{ product.name
                             }}</h3>
-                        <div class="flex items-center justify-between pt-1">
-                            <span class="text-xl font-black text-slate-900">{{ product.price | currency }}</span>
 
+                        <div class="flex items-center justify-between pt-1">
+                            <span class="text-xl font-black text-slate-900">{{ product.price | currency:'USD':'symbol':'1.2-2' }}</span>
+                            @if (!posService.canAddToCart(product.id)) {
+                                <span class="text-xs text-red-500 font-semibold">Sin stock</span>
+                            }
                         </div>
                     </div>
 
                     <!-- Hover action hint -->
+                    @if (posService.canAddToCart(product.id)) {
                     <div
                         class="absolute -top-1 -right-1 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all shadow-lg scale-0 group-hover:scale-100">
                         <i class="pi pi-plus text-xs"></i>
                     </div>
+                    }
                 </div>
                 }
             </div>
@@ -98,8 +111,11 @@
 
                     <div class="flex-1 min-w-0">
                         <p class="font-bold text-slate-900 truncate">{{ item.name }}</p>
-                        <div class="flex items-center gap-3 pt-1">
-                            <span class="text-blue-600 font-bold text-sm">{{ item.price | currency }}</span>
+                        <div class="flex items-center gap-2 pt-1">
+                            <span class="text-blue-600 font-bold text-sm">{{ item.price | currency:'USD':'symbol':'1.2-2' }}</span>
+                            <span class="text-xs text-slate-500">Stock: {{ item.stock }}</span>
+                        </div>
+                        <div class="flex items-center gap-3 pt-2">
                             <div
                                 class="flex items-center gap-2 bg-white rounded-lg border border-slate-200 px-1 py-0.5">
                                 <button (click)="posService.updateQuantity(item.id, item.quantity - 1)"
@@ -109,15 +125,22 @@
                                 <span class="text-xs font-bold text-slate-900 min-w-[20px] text-center">{{ item.quantity
                                     }}</span>
                                 <button (click)="posService.updateQuantity(item.id, item.quantity + 1)"
+                                    [disabled]="item.quantity >= item.stock"
+                                    [class.opacity-50]="item.quantity >= item.stock"
+                                    [class.cursor-not-allowed]="item.quantity >= item.stock"
                                     class="w-5 h-5 flex items-center justify-center text-slate-400 hover:text-blue-500 transition-colors">
                                     <i class="pi pi-plus text-[8px]"></i>
                                 </button>
                             </div>
+                            @if (item.quantity >= item.stock) {
+                                <span class="text-xs text-red-500">Stock máximo</span>
+                            }
                         </div>
                     </div>
 
                     <div class="text-right">
-                        <span class="font-black text-slate-900">{{ (item.price * item.quantity) | currency }}</span>
+                        <span class="font-black text-slate-900">{{ (item.price * item.quantity) | currency:'USD':'symbol':'1.2-2' }}</span>
+                        <p class="text-xs text-slate-500">{{ item.quantity }} × {{ item.price | currency:'USD':'symbol':'1.2-2' }}</p>
                     </div>
                 </div>
                 }
@@ -126,19 +149,26 @@
         </div>
 
         <div class="p-6 bg-slate-50 border-t border-slate-200 space-y-4">
-            <div class="space-y-2">
-                <div class="flex justify-between text-slate-500 text-sm font-medium">
+            <div class="space-y-3">
+                <!-- Subtotal -->
+                <div class="flex justify-between text-slate-600 text-sm font-medium">
                     <span>Subtotal</span>
-                    <span>{{ posService.cartTotal() | currency }}</span>
+                    <span>{{ posService.cartSubtotal() | currency:'USD':'symbol':'1.2-2' }}</span>
                 </div>
-                <div class="flex justify-between text-slate-500 text-sm font-medium">
-                    <span>Tax (0.00%)</span>
-                    <span>$0.00</span>
+
+                <!-- IVA -->
+                <div class="flex justify-between text-slate-600 text-sm font-medium">
+                    <span>Tax ({{ posService.getIvaRatePercentage() }})</span>
+                    <span>{{ posService.cartTax() | currency:'USD':'symbol':'1.2-2' }}</span>
                 </div>
-                <div
-                    class="flex justify-between text-3xl font-black text-slate-900 pt-3 mt-2 border-t border-slate-200">
+
+                <!-- Separador -->
+                <div class="border-t border-slate-200 pt-3 mt-1"></div>
+
+                <!-- Total con IVA -->
+                <div class="flex justify-between text-2xl font-black text-slate-900">
                     <span>Total</span>
-                    <span class="text-blue-600">{{ posService.cartTotal() | currency }}</span>
+                    <span class="text-blue-600">{{ posService.cartTotal() | currency:'USD':'symbol':'1.2-2' }}</span>
                 </div>
             </div>
 

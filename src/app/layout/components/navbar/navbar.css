@@ -1,0 +1,31 @@
+/* Estilos específicos para el navbar */
+:host {
+  display: block;
+}
+
+/* Transiciones suaves para los enlaces */
+a {
+  transition: all 0.2s ease;
+}
+
+/* Mejora visual para el estado activo */
+a.router-link-active {
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+/* Responsive: menú móvil */
+@media (max-width: 768px) {
+  nav {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .text-2xl {
+    font-size: 1.5rem;
+  }
+
+  .w-12 {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+}
