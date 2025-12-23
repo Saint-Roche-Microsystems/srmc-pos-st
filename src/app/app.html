@@ -1,5 +1,5 @@
 <div class="h-screen bg-gray-50 flex flex-col">
-  <app-navbar></app-navbar>
+  <app-navbar *ngIf="router.url !== '/login'"></app-navbar>
 
   <main class="flex-1 flex overflow-hidden">
     <router-outlet></router-outlet>
