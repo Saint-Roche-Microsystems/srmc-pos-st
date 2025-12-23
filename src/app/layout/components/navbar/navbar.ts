@@ -1,4 +1,3 @@
-// navbar.component.ts
 import { CommonModule } from '@angular/common';
 import { Component, inject, computed } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';

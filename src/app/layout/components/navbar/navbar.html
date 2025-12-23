@@ -11,22 +11,32 @@
     <div *ngIf="isAuthenticated"
       class="hidden md:flex items-center gap-2 bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
       <a routerLink="/pos" routerLinkActive="bg-white text-blue-600 shadow-sm"
-        class="px-6 py-2 rounded-xl font-bold text-slate-400 hover:text-slate-900 transition-all no-underline">
-        Terminal
+        class="px-6 py-2 rounded-xl font-bold text-slate-400 hover:text-slate-900 transition-all no-underline flex items-center gap-2">
+        <i class="pi pi-shopping-cart"></i>
+        <span>Terminal</span>
       </a>
       <a routerLink="/inventory" routerLinkActive="bg-white text-blue-600 shadow-sm"
-        class="px-6 py-2 rounded-xl font-bold text-slate-400 hover:text-slate-900 transition-all no-underline">
-        Inventory
+        class="px-6 py-2 rounded-xl font-bold text-slate-400 hover:text-slate-900 transition-all no-underline flex items-center gap-2">
+        <i class="pi pi-box"></i>
+        <span>Inventory</span>
+      </a>
+      <a routerLink="/orders" routerLinkActive="bg-white text-blue-600 shadow-sm"
+        class="px-6 py-2 rounded-xl font-bold text-slate-400 hover:text-slate-900 transition-all no-underline flex items-center gap-2">
+        <i class="pi pi-history"></i>
+        <span>Orders</span>
       </a>
     </div>
   </div>
 
   <!-- Mostrar usuario y botón de logout si está autenticado -->
   <div *ngIf="isAuthenticated()" class="flex items-center gap-4">
-    <span *ngIf="username()" class="text-slate-700 font-medium">{{ username() }}</span>
+    <div class="flex flex-col items-end">
+      <span *ngIf="username()" class="text-slate-700 font-medium">{{ username() }}</span>
+    </div>
     <button (click)="logout()"
-      class="px-4 py-2 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-colors">
-      Logout
+      class="px-4 py-2 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-colors flex items-center gap-2">
+      <i class="pi pi-sign-out"></i>
+      <span>Logout</span>
     </button>
   </div>
 </nav>

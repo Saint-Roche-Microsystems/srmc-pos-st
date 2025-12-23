@@ -149,17 +149,24 @@
         </div>
 
         <div class="p-6 bg-slate-50 border-t border-slate-200 space-y-4">
-            <div class="space-y-2">
-                <div class="flex justify-between text-slate-500 text-sm font-medium">
+            <div class="space-y-3">
+                <!-- Subtotal -->
+                <div class="flex justify-between text-slate-600 text-sm font-medium">
                     <span>Subtotal</span>
-                    <span>{{ posService.cartTotal() | currency:'USD':'symbol':'1.2-2' }}</span>
+                    <span>{{ posService.cartSubtotal() | currency:'USD':'symbol':'1.2-2' }}</span>
                 </div>
-                <div class="flex justify-between text-slate-500 text-sm font-medium">
-                    <span>Tax (0.00%)</span>
-                    <span>$0.00</span>
+
+                <!-- IVA -->
+                <div class="flex justify-between text-slate-600 text-sm font-medium">
+                    <span>Tax ({{ posService.getIvaRatePercentage() }})</span>
+                    <span>{{ posService.cartTax() | currency:'USD':'symbol':'1.2-2' }}</span>
                 </div>
-                <div
-                    class="flex justify-between text-3xl font-black text-slate-900 pt-3 mt-2 border-t border-slate-200">
+
+                <!-- Separador -->
+                <div class="border-t border-slate-200 pt-3 mt-1"></div>
+
+                <!-- Total con IVA -->
+                <div class="flex justify-between text-2xl font-black text-slate-900">
                     <span>Total</span>
                     <span class="text-blue-600">{{ posService.cartTotal() | currency:'USD':'symbol':'1.2-2' }}</span>
                 </div>

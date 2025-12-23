@@ -1,0 +1,85 @@
+<div class="p-6 bg-gray-50 min-h-screen max-w-7xl mx-auto">
+
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-3xl font-bold">Orders</h1>
+      <p class="text-gray-500">Your order history</p>
+    </div>
+
+    <p-button
+      icon="pi pi-refresh"
+      [text]="true"
+      (click)="refresh()"
+      [loading]="loading()">
+    </p-button>
+  </div>
+
+  @if (loading()) {
+    <p-skeleton height="70px" class="mb-3"></p-skeleton>
+    <p-skeleton height="70px"></p-skeleton>
+  }
+
+  @else if (error()) {
+    <div class="p-6 bg-red-50 text-red-600 rounded-xl text-center">
+      {{ error() }}
+    </div>
+  }
+
+  @else if (filteredOrders.length === 0) {
+    <div class="p-8 bg-white rounded-xl text-center shadow">
+      No orders found
+    </div>
+  }
+
+  @else {
+    <p-table [value]="filteredOrders" [rows]="10" [paginator]="true">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Date</th>
+          <th>Items</th>
+          <th>Total</th>
+          <th></th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-order>
+        <tr>
+          <td>{{ formatDate(order.createdAt) }}</td>
+          <td>{{ itemsCount(order) }}</td>
+          <td class="font-bold">{{ formatCurrency(order.total) }}</td>
+          <td>
+            <p-button
+              icon="pi pi-eye"
+              [text]="true"
+              (click)="view(order)">
+            </p-button>
+          </td>
+        </tr>
+      </ng-template>
+
+    </p-table>
+  }
+
+</div>
+
+<p-dialog
+  header="Order Details"
+  [(visible)]="showDialog"
+  [modal]="true"
+  [style]="{ width: '500px' }"
+  (onHide)="close()">
+
+  @if (selectedOrder) {
+    <p><b>Total:</b> {{ formatCurrency(selectedOrder.total) }}</p>
+
+    <hr class="my-3">
+
+    <ul class="space-y-2">
+      <li *ngFor="let item of selectedOrder.orderItems">
+        {{ item.productId.name }} × {{ item.quantity }}
+        — {{ formatCurrency(item.price) }}
+      </li>
+    </ul>
+  }
+</p-dialog>

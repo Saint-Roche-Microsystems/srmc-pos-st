@@ -10,6 +10,9 @@ export class PosService {
     private _products = signal<Product[]>([]);
     private _cart = signal<CartItem[]>([]);
 
+    // Tasa de IVA (ejemplo: 16% - puedes hacerlo configurable)
+    private readonly ivaRate = 0.16;
+
     products = computed(() => this._products());
     cart = computed(() => this._cart());
 
@@ -24,8 +27,19 @@ export class PosService {
         });
     }
 
-    cartTotal = computed(() =>
+    // Subtotal sin IVA
+    cartSubtotal = computed(() =>
         this._cart().reduce((acc, item) => acc + (item.price * item.quantity), 0)
+    );
+
+    // Monto del IVA
+    cartTax = computed(() =>
+        this.cartSubtotal() * this.ivaRate
+    );
+
+    // Total con IVA
+    cartTotal = computed(() =>
+        this.cartSubtotal() + this.cartTax()
     );
 
     cartCount = computed(() =>
@@ -137,6 +151,8 @@ export class PosService {
                 quantity: item.quantity,
                 price: item.price
             })),
+            subtotal: this.cartSubtotal(),
+            tax: this.cartTax(),
             total: this.cartTotal()
         };
 
@@ -164,5 +180,15 @@ export class PosService {
     // Método para verificar si un producto puede ser agregado al carrito
     canAddToCart(productId: string): boolean {
         return this.getAvailableStock(productId) > 0;
+    }
+
+    // Método para obtener la tasa de IVA (puedes hacerlo configurable)
+    getIvaRate(): number {
+        return this.ivaRate;
+    }
+
+    // Método para formatear el porcentaje de IVA
+    getIvaRatePercentage(): string {
+        return `${(this.ivaRate * 100)}%`;
     }
 }
