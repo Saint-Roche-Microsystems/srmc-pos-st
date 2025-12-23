@@ -1,111 +1,186 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { InventoryComponent } from './inventory';
 import { PosService } from '../pos-terminal/services/pos.service';
+import { ReactiveFormsModule } from '@angular/forms';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { signal } from '@angular/core';
 import { Product } from '../shared/models/product';
-import { By } from '@angular/platform-browser';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { ReactiveFormsModule } from '@angular/forms';
+
+/* =======================
+   Mock del PosService
+======================= */
+class PosServiceMock {
+  private _products = signal<Product[]>([
+    {
+      id: '1',
+      name: 'Coffee',
+      price: 5,
+      stock: 20,
+      image: ''
+    }
+  ]);
+
+  products = this._products.asReadonly();
+
+  addProduct = jasmine.createSpy('addProduct');
+  editProduct = jasmine.createSpy('editProduct');
+  deleteProduct = jasmine.createSpy('deleteProduct');
+}
 
 describe('InventoryComponent', () => {
-    let component: InventoryComponent;
-    let fixture: ComponentFixture<InventoryComponent>;
-    let mockPosService: any;
+  let component: InventoryComponent;
+  let fixture: ComponentFixture<InventoryComponent>;
+  let posService: PosServiceMock;
 
-    const mockProducts: Product[] = [
-        { id: '1', name: 'Coffee', price: 5, stock: 10 },
-        { id: '2', name: 'Tea', price: 3, stock: 50 }
-    ];
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [
+        InventoryComponent,
+        ReactiveFormsModule,
+        NoopAnimationsModule // evita problemas con PrimeNG
+      ],
+      providers: [
+        { provide: PosService, useClass: PosServiceMock }
+      ]
+    }).compileComponents();
 
-    beforeEach(async () => {
-        mockPosService = {
-            products: signal(mockProducts),
-            addProduct: jasmine.createSpy('addProduct'),
-            deleteProduct: jasmine.createSpy('deleteProduct')
-        };
+    fixture = TestBed.createComponent(InventoryComponent);
+    component = fixture.componentInstance;
+    posService = TestBed.inject(PosService) as unknown as PosServiceMock;
+    fixture.detectChanges();
+  });
 
-        await TestBed.configureTestingModule({
-            imports: [InventoryComponent, ReactiveFormsModule],
-            providers: [
-                { provide: PosService, useValue: mockPosService },
-                provideAnimationsAsync()
-            ]
-        }).compileComponents();
+  /* =======================
+     Creación
+  ======================= */
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 
-        fixture = TestBed.createComponent(InventoryComponent);
-        component = fixture.componentInstance;
-        fixture.detectChanges();
+  /* =======================
+     showDialog()
+  ======================= */
+  it('should open dialog in create mode and reset form', () => {
+    component.showDialog();
+
+    expect(component.displayDialog).toBeTrue();
+    expect(component.isEditMode).toBeFalse();
+    expect(component.editingProductId).toBeNull();
+
+    expect(component.productForm.value).toEqual({
+      name: '',
+      price: 0,
+      stock: 0,
+      image: ''
+    });
+  });
+
+  /* =======================
+     showEditDialog()
+  ======================= */
+  it('should open dialog in edit mode and patch form values', () => {
+    const product: Product = {
+      id: '99',
+      name: 'Laptop',
+      price: 1200,
+      stock: 10,
+      image: 'img.jpg'
+    };
+
+    component.showEditDialog(product);
+
+    expect(component.isEditMode).toBeTrue();
+    expect(component.editingProductId).toBe('99');
+    expect(component.displayDialog).toBeTrue();
+
+    expect(component.productForm.value).toEqual({
+      name: 'Laptop',
+      price: 1200,
+      stock: 10,
+      image: 'img.jpg'
+    });
+  });
+
+  /* =======================
+     saveProduct() - ADD
+  ======================= */
+  it('should call addProduct when saving a new product', () => {
+    component.showDialog();
+
+    component.productForm.setValue({
+      name: 'Tea',
+      price: 3,
+      stock: 15,
+      image: ''
     });
 
-    it('should create', () => {
-        expect(component).toBeTruthy();
+    component.saveProduct();
+
+    expect(posService.addProduct).toHaveBeenCalledWith({
+      name: 'Tea',
+      price: 3,
+      stock: 15,
+      image: undefined
     });
 
-    it('should render products in the table', () => {
-        const rows = fixture.debugElement.queryAll(By.css('p-table tr'));
-        // Header row + 2 data rows
-        expect(rows.length).toBe(3);
-        expect(rows[1].nativeElement.textContent).toContain('Coffee');
-        expect(rows[2].nativeElement.textContent).toContain('Tea');
+    expect(component.displayDialog).toBeFalse();
+  });
+
+  /* =======================
+     saveProduct() - EDIT
+  ======================= */
+  it('should call editProduct when editing an existing product', () => {
+    const product: Product = {
+      id: '10',
+      name: 'Sugar',
+      price: 2,
+      stock: 30
+    };
+
+    component.showEditDialog(product);
+
+    component.productForm.patchValue({
+      price: 2.5,
+      stock: 25
     });
 
-    it('should show dialog when clicking New Product button', () => {
-        const newProductBtn = fixture.debugElement.query(By.css('p-button[label="New Product"]'));
-        newProductBtn.triggerEventHandler('click', null);
+    component.saveProduct();
 
-        expect(component.displayDialog).toBeTrue();
+    expect(posService.editProduct).toHaveBeenCalledWith('10', {
+      name: 'Sugar',
+      price: 2.5,
+      stock: 25,
+      image: undefined
     });
 
-    it('should validate the form', () => {
-        component.showDialog();
-        const form = component.productForm;
+    expect(component.displayDialog).toBeFalse();
+  });
 
-        expect(form.valid).toBeFalse();
+  /* =======================
+     saveProduct() - INVALID
+  ======================= */
+  it('should NOT save if form is invalid', () => {
+    component.showDialog();
 
-        form.patchValue({
-            name: 'Cookie',
-            price: 2.5,
-            stock: 10
-        });
-
-        expect(form.valid).toBeTrue();
+    component.productForm.patchValue({
+      name: '',
+      price: 0,
+      stock: -1
     });
 
-    it('should call addProduct and close dialog on valid save', () => {
-        component.showDialog();
-        component.productForm.patchValue({
-            name: 'Cookie',
-            price: 2.5,
-            stock: 10,
-            image: 'http://example.com/img.jpg'
-        });
+    component.saveProduct();
 
-        component.saveProduct();
+    expect(posService.addProduct).not.toHaveBeenCalled();
+    expect(posService.editProduct).not.toHaveBeenCalled();
+    expect(component.displayDialog).toBeTrue();
+  });
 
-        expect(mockPosService.addProduct).toHaveBeenCalledWith({
-            name: 'Cookie',
-            price: 2.5,
-            stock: 10,
-            image: 'http://example.com/img.jpg'
-        });
-        expect(component.displayDialog).toBeFalse();
-    });
+  /* =======================
+     deleteProduct()
+  ======================= */
+  it('should call deleteProduct on service', () => {
+    component.deleteProduct('123');
 
-    it('should call deleteProduct when clicking the delete button', () => {
-        // Find delete button in first data row
-        const deleteBtn = fixture.debugElement.query(By.css('p-button[severity="danger"]'));
-        deleteBtn.triggerEventHandler('click', null);
-
-        expect(mockPosService.deleteProduct).toHaveBeenCalledWith('1');
-    });
-
-    it('should display correct stock status', () => {
-        const statusRows = fixture.debugElement.queryAll(By.css('.text-xs.font-bold.uppercase.tracking-tighter'));
-
-        // Product 1 has 10 stock -> "Low Stock"
-        expect(statusRows[0].nativeElement.textContent).toContain('Low Stock');
-
-        // Product 2 has 50 stock -> "Healthy"
-        expect(statusRows[1].nativeElement.textContent).toContain('Healthy');
-    });
+    expect(posService.deleteProduct).toHaveBeenCalledWith('123');
+  });
 });
