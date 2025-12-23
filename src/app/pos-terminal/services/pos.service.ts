@@ -10,8 +10,8 @@ export class PosService {
     private _products = signal<Product[]>([]);
     private _cart = signal<CartItem[]>([]);
 
-    // Tasa de IVA (ejemplo: 16% - puedes hacerlo configurable)
-    private readonly ivaRate = 0.16;
+    // Tasa de IVA
+    private readonly ivaRate = 0.15;
 
     products = computed(() => this._products());
     cart = computed(() => this._cart());
