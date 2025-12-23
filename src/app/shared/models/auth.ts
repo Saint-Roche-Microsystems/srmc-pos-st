@@ -8,6 +8,11 @@ export interface LoginResponse {
   username: string;
 }
 
+export interface RegisterRequest {
+  username: string;
+  password: string;
+}
+
 export interface AuthState {
   isAuthenticated: boolean;
   username: string | null;

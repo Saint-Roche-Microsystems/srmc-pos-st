@@ -1,5 +1,6 @@
+// navbar.component.ts
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, computed } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { AuthService } from '../../../core/services/auth.service';
@@ -12,16 +13,12 @@ import { AuthService } from '../../../core/services/auth.service';
   styleUrl: './navbar.css'
 })
 export class NavbarComponent {
-   private authService = inject(AuthService);
+  private authService = inject(AuthService);
 
-  // Exponer el estado de autenticación
-  get isAuthenticated() {
-    return this.authService.isAuthenticated();
-  }
+  authState = this.authService.authState$;
 
-  get username() {
-    return this.authService.getUsername();
-  }
+  isAuthenticated = computed(() => this.authState().isAuthenticated);
+  username = computed(() => this.authState().username);
 
   logout() {
     this.authService.logout();

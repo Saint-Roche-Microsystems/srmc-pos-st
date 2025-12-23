@@ -8,6 +8,10 @@ export const routes: Routes = [
     pathMatch: 'full'
   },
   {
+    path: 'register',
+    loadComponent: () => import('./register-form/register-form').then(m => m.RegisterForm)
+  },
+  {
     path: 'login',
     loadComponent: () => import('./login.component/login.component').then(m => m.LoginComponent)
   },

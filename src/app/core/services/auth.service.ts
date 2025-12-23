@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from './api.service';
-import { LoginRequest, LoginResponse, AuthState } from '../../shared/models/auth';
+import { LoginRequest, LoginResponse, AuthState, RegisterRequest } from '../../shared/models/auth';
 import { tap } from 'rxjs/operators';
 
 @Injectable({
@@ -50,6 +50,11 @@ export class AuthService {
         });
       })
     );
+  }
+
+  // auth.service.ts - Agregar este método:
+  register(credentials: RegisterRequest) {
+    return this.apiService.post<void>('auth/register', credentials);
   }
 
   logout() {

@@ -12,5 +12,14 @@ import { CommonModule } from '@angular/common';
 })
 export class App {
   protected readonly title = signal('srmc-pos-st');
+
+  // Rutas donde NO debe mostrarse el navbar
+  private publicRoutes = ['/login', '/register'];
+
   constructor(public router: Router) {}
+
+  // Método para verificar si debe mostrar el navbar
+  shouldShowNavbar(): boolean {
+    return !this.publicRoutes.includes(this.router.url);
+  }
 }
