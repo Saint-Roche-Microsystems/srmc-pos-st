@@ -14,7 +14,7 @@ import { RegisterRequest } from '../shared/models/auth';
 })
 export class RegisterForm {
 
-private fb = inject(FormBuilder);
+  private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
 
@@ -46,7 +46,6 @@ private fb = inject(FormBuilder);
 
   onSubmit() {
     if (this.registerForm.invalid) {
-      // Mark all fields as touched to trigger validation messages
       this.registerForm.markAllAsTouched();
       return;
     }
@@ -64,15 +63,14 @@ private fb = inject(FormBuilder);
       next: () => {
         this.successMessage = 'Account created successfully! Redirecting to login...';
 
-        // Redirect to login after 2 seconds
         setTimeout(() => {
+          this.isLoading = false; // ✅ mover aquí
           this.router.navigate(['/login']);
         }, 2000);
       },
       error: (error) => {
         this.isLoading = false;
 
-        // Handle different error scenarios
         if (error.status === 400) {
           this.errorMessage = 'Username already exists. Please choose another one.';
         } else if (error.status === 0) {
@@ -80,11 +78,6 @@ private fb = inject(FormBuilder);
         } else {
           this.errorMessage = 'An error occurred during registration. Please try again.';
         }
-
-        console.error('Registration error:', error);
-      },
-      complete: () => {
-        this.isLoading = false;
       }
     });
   }
