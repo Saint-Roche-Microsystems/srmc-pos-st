@@ -8,6 +8,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { Product } from '../shared/models/product';
+
 
 @Component({
   selector: 'app-inventory',
@@ -30,6 +32,8 @@ export class InventoryComponent {
   private fb = inject(FormBuilder);
 
   displayDialog = false;
+  isEditMode = false;
+  editingProductId: string | null = null;
 
   productForm = this.fb.group({
     name: ['', Validators.required],
@@ -39,6 +43,8 @@ export class InventoryComponent {
   });
 
   showDialog() {
+    this.isEditMode = false;
+    this.editingProductId = null;
     this.productForm.reset({
       name: '',
       price: 0,
@@ -48,15 +54,34 @@ export class InventoryComponent {
     this.displayDialog = true;
   }
 
+  showEditDialog(product: Product) {
+    this.isEditMode = true;
+    this.editingProductId = product.id;
+    this.productForm.patchValue({
+      name: product.name,
+      price: product.price,
+      stock: product.stock,
+      image: product.image || ''
+    });
+    this.displayDialog = true;
+  }
+
   saveProduct() {
     if (this.productForm.valid) {
       const val = this.productForm.value;
-      this.posService.addProduct({
+      const productData = {
         name: val.name!,
         price: val.price!,
         stock: val.stock!,
         image: val.image || undefined
-      });
+      };
+
+      if (this.isEditMode && this.editingProductId) {
+        this.posService.editProduct(this.editingProductId, productData);
+      } else {
+        this.posService.addProduct(productData);
+      }
+
       this.displayDialog = false;
     }
   }
@@ -65,4 +90,3 @@ export class InventoryComponent {
     this.posService.deleteProduct(id);
   }
 }
-
