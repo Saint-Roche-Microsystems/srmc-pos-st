@@ -52,8 +52,8 @@ describe('PosService', () => {
             expect(service.cart()[0].quantity).toBe(1);
             expect(service.cartCount()).toBe(1);
 
-            // 5 + 16% = 5.8
-            expect(service.cartTotal()).toBeCloseTo(5.8, 2);
+                // 5 + 15% = 5.75
+                expect(service.cartTotal()).toBeCloseTo(5.75, 2);
         });
 
         it('should increment quantity if product already in cart', () => {
@@ -64,17 +64,17 @@ describe('PosService', () => {
             expect(service.cart()[0].quantity).toBe(2);
             expect(service.cartCount()).toBe(2);
 
-            // 10 + 16% = 11.6
-            expect(service.cartTotal()).toBeCloseTo(11.6, 2);
+                // 10 + 15% = 11.5
+                expect(service.cartTotal()).toBeCloseTo(11.5, 2);
         });
 
         it('should update quantity correctly', () => {
             service.addToCart(mockProducts[0]);
             service.updateQuantity('1', 5);
 
-            // 25 + 16% = 29
+            // 25 + 15% = 28.75
             expect(service.cart()[0].quantity).toBe(5);
-            expect(service.cartTotal()).toBeCloseTo(29, 2);
+                expect(service.cartTotal()).toBeCloseTo(28.75, 2);
         });
 
         it('should remove product if quantity updated to 0', () => {
